@@ -8,6 +8,7 @@
 
 #import "RWSearchFormViewController.h"
 #import "RWSearchResultsViewController.h"
+#import <ReactiveObjC.h>
 
 @interface RWSearchFormViewController ()
 
@@ -28,7 +29,21 @@
   [self styleTextField:self.searchText];
   
   self.resultsViewController = self.splitViewController.viewControllers[1];
-  
+    
+    [self checkInputTF];
+}
+
+- (void)checkInputTF{
+    RACSignal *lTFColorSig =
+    [self.searchText.rac_textSignal
+    map:^id _Nullable(NSString * _Nullable value) {
+        return [self isValidSearchText:value] ? [UIColor whiteColor] : [UIColor yellowColor];
+    }];
+    RAC(self.searchText, backgroundColor) = lTFColorSig;
+}
+
+- (BOOL)isValidSearchText:(NSString *)text {
+  return text.length > 2;
 }
 
 - (void)styleTextField:(UITextField *)textField {
