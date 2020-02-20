@@ -50,6 +50,16 @@
   RWTweet *tweet = self.tweets[indexPath.row];
   cell.twitterStatusText.text = tweet.status;
   cell.twitterUsernameText.text = [NSString stringWithFormat:@"@%@",tweet.username];
+    
+    cell.imageView.image = nil;
+    [[[tweet getAvatarImageSignal]
+      deliverOn:[RACScheduler mainThreadScheduler]]
+     subscribeNext:^(UIImage *  _Nullable x) {
+        cell.imageView.image = x;
+    }
+     error:^(NSError * _Nullable error) {
+        NSLog(@"load img err:%@",error);
+    }];
   
   return cell;
 }

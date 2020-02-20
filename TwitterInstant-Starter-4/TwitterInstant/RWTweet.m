@@ -20,4 +20,28 @@
   return tweet;
 }
 
+- (RACSignal *)getAvatarImageSignal{
+    if (0 == self.profileImageUrl.length) {
+        return nil;
+    }
+    
+    RACScheduler *backThread = [RACScheduler schedulerWithPriority:(RACSchedulerPriorityBackground)];
+    
+    return [[RACSignal createSignal:^RACDisposable * _Nullable(id<RACSubscriber>  _Nonnull subscriber) {
+        
+        NSData *lData = [NSData dataWithContentsOfURL:[NSURL URLWithString:self.profileImageUrl]];
+        UIImage *lImg = [UIImage imageWithData:lData];
+        
+        NSError *lErr = [NSError errorWithDomain:@"load avater err" code:400 userInfo:nil];
+        if (nil == lImg) {
+            [subscriber sendError:lErr];
+        }else{
+            [subscriber sendNext:lImg];
+            [subscriber sendCompleted];
+        }
+        
+        return nil;
+    }] subscribeOn:backThread];
+}
+
 @end

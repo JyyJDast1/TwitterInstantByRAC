@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <ReactiveObjC.h>
 
 @interface RWTweet : NSObject
 
@@ -18,5 +19,5 @@
 
 + (instancetype)tweetWithStatus:(NSDictionary *)status;
 
-
+- (RACSignal *)getAvatarImageSignal;
 @end
