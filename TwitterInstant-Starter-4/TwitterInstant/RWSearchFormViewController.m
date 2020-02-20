@@ -23,7 +23,7 @@
 - (void)viewDidLoad
 {
   [super viewDidLoad];
-  
+
   self.title = @"Twitter Instant";
   
   [self styleTextField:self.searchText];
@@ -40,6 +40,12 @@
         return [self isValidSearchText:value] ? [UIColor whiteColor] : [UIColor yellowColor];
     }];
     RAC(self.searchText, backgroundColor) = lTFColorSig;
+    
+    //快速查看宏定义展开后样式的方法：select Product -> Perform Action -> Preprocess “RWSearchForViewController”. This will preprocess the view controller, expand all the macros and allow you to see the final output.
+//    @weakify(self);
+//    [lTFColorSig subscribeNext:^(id  _Nullable x) {
+//        @strongify(self);
+//    }];
 }
 
 - (BOOL)isValidSearchText:(NSString *)text {
