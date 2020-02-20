@@ -33,12 +33,14 @@
     
     [self checkInputTF ];
     
+    @weakify(self);
     [[[[[[[self
           isUserAgreeLoginSig]
          
          //上面信号发送完成时，才往下流动
          then:^RACSignal * _Nonnull{
         //对搜索框进行限制，2字以上；节流0.5s;通过文字进行搜索；展示搜索结果
+        @strongify(self);
         return self.searchText.rac_textSignal;
     }]
         filter:^BOOL(NSString *  _Nullable value) {
@@ -47,10 +49,12 @@
        throttle:0.5]
       //网络请求
       flattenMap:^__kindof RACSignal * _Nullable(NSString *  _Nullable value) {
+        @strongify(self);
         return [self signalGetInfoWithSearchText:value];
     }]
      deliverOn:[RACScheduler mainThreadScheduler]]
      subscribeNext:^(NSArray *  _Nullable arr) {
+        @strongify(self);
         NSLog(@"arr:%@", arr);
         [self.resultsViewController displayTweets:arr];
     } error:^(NSError * _Nullable error) {

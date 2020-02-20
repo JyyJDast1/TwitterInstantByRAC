@@ -51,11 +51,14 @@
   cell.twitterStatusText.text = tweet.status;
   cell.twitterUsernameText.text = [NSString stringWithFormat:@"@%@",tweet.username];
     
-    cell.imageView.image = nil;
+    cell.twitterAvatarView.image = [UIImage imageNamed:@"holder"];
     [[[tweet getAvatarImageSignal]
       deliverOn:[RACScheduler mainThreadScheduler]]
      subscribeNext:^(UIImage *  _Nullable x) {
-        cell.imageView.image = x;
+        NSLog(@"img set,%@",[NSThread currentThread]);
+        
+        //注意：不要错误赋值到 imageview上了！！！
+        cell.twitterAvatarView.image = x;
     }
      error:^(NSError * _Nullable error) {
         NSLog(@"load img err:%@",error);
