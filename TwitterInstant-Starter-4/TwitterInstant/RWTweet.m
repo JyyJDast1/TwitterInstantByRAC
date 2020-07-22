@@ -27,7 +27,7 @@
     
     RACScheduler *backThread = [RACScheduler schedulerWithPriority:(RACSchedulerPriorityBackground)];
     
-    return [[RACSignal createSignal:^RACDisposable * _Nullable(id<RACSubscriber>  _Nonnull subscriber) {
+    return [[[RACSignal createSignal:^RACDisposable * _Nullable(id<RACSubscriber>  _Nonnull subscriber) {
         
         NSData *lData = [NSData dataWithContentsOfURL:[NSURL URLWithString:self.profileImageUrl]];
         UIImage *lImg = [UIImage imageWithData:lData];
@@ -41,7 +41,9 @@
         }
         
         return nil;
-    }] subscribeOn:backThread];
+    }]
+             replayLazily]
+            subscribeOn:backThread];
 }
 
 @end
