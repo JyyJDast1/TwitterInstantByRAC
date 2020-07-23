@@ -11,11 +11,25 @@
 #import <ReactiveObjC.h>
 #import "RWTweet.h"
 
+#import <Accounts/Accounts.h>
+#import <Social/Social.h>
+typedef NS_ENUM(NSInteger, RWTwitterInstantError) {
+    RWTwitterInstantErrorAccessDenied,
+    RWTwitterInstantErrorNoTwitterAccounts,
+    RWTwitterInstantErrorInvalidResponse
+};
+
+static NSString * const RWTwitterInstantDomain = @"TwitterInstant";
+
 @interface RWSearchFormViewController ()
 
 @property (weak, nonatomic) IBOutlet UITextField *searchText;
 
 @property (strong, nonatomic) RWSearchResultsViewController *resultsViewController;
+
+@property (strong, nonatomic) ACAccountStore *accountStore;
+@property (strong, nonatomic) ACAccountType *twitterAccountType;
+
 
 @end
 
@@ -31,9 +45,22 @@
     
     self.resultsViewController = self.splitViewController.viewControllers[1];
     
+    self.accountStore = [[ACAccountStore alloc] init];
+    self.twitterAccountType = [self.accountStore
+      accountTypeWithAccountTypeIdentifier:ACAccountTypeIdentifierTwitter];
+
+    
     [self checkInputTF ];
     
+//    [[self requestAccessToTwitterSignal]
+//    subscribeNext:^(id x) {
+//      NSLog(@"Access granted");
+//    } error:^(NSError *error) {
+//      NSLog(@"An error occurred: %@", error);
+//    }];
+    
     @weakify(self);
+    
     [[[[[[[self
           isUserAgreeLoginSig]
          
@@ -67,6 +94,34 @@
     
     
     [self testCheckThread];
+}
+
+- (RACSignal *)requestAccessToTwitterSignal {
+  
+  // 1 - define an error
+  NSError *accessError = [NSError errorWithDomain:RWTwitterInstantDomain
+                                             code:RWTwitterInstantErrorAccessDenied
+                                         userInfo:nil];
+  
+  // 2 - create the signal
+  @weakify(self)
+  return [RACSignal createSignal:^RACDisposable *(id<RACSubscriber> subscriber) {
+    // 3 - request access to twitter
+    @strongify(self)
+    [self.accountStore
+       requestAccessToAccountsWithType:self.twitterAccountType
+         options:nil
+      completion:^(BOOL granted, NSError *error) {
+          // 4 - handle the response
+          if (!granted) {
+            [subscriber sendError:accessError];
+          } else {
+            [subscriber sendNext:nil];
+            [subscriber sendCompleted];
+          }
+        }];
+    return nil;
+  }];
 }
 
 - (RACSignal *)signalGetInfoWithSearchText:(NSString *)text{
@@ -116,8 +171,13 @@
             [subscriber sendError:lErr];
         }];
         [lAlertC addAction:lActNO];
-        [self presentViewController:lAlertC animated:YES completion:^{
-        }];
+        
+        //必须切到主线程，否则ipad上present可能弹出来
+        dispatch_async(dispatch_get_main_queue(), ^ {
+           [self presentViewController:lAlertC animated:YES completion:^{
+            }];
+        });
+        
         
         return nil;
     }];
