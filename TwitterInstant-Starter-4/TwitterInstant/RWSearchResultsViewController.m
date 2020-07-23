@@ -11,11 +11,11 @@
 #import "RWTableViewCell.h"
 #import "RWTweet.h"
 
-@interface RWSearchResultsViewController ()
+@interface RWSearchResultsViewController ()<NSCacheDelegate>
 
 @property (nonatomic, copy) NSArray *tweets;
 
-@property (nonatomic, copy) NSDictionary<NSString*,UIImage*> *gDic4CacheImg; //立刻懒加载分配空间
+@property (nonatomic, strong) NSCache *gCache4Img; //立刻懒加载分配空间
 @end
 
 @implementation RWSearchResultsViewController {
@@ -35,6 +35,10 @@
   [self.tableView reloadData];
 }
 
+#pragma mark -  delegate 4 nscache
+- (void)cache:(NSCache *)cache willEvictObject:(id)obj{
+    NSLog(@"cache willEvictObject:%@",obj);
+}
 
 #pragma mark - Table view data source
 
@@ -56,7 +60,7 @@
     cell.twitterAvatarView.image = [UIImage imageNamed:@"holder"];
     
     if (tweet.profileImageUrl.length > 0) {
-        UIImage *lImg = self.gDic4CacheImg[tweet.profileImageUrl];
+        UIImage *lImg = [self.gCache4Img objectForKey:tweet.profileImageUrl];
         if (nil != lImg) {
             cell.twitterAvatarView.image = lImg;
         }else{
@@ -69,9 +73,7 @@
                   cell.twitterAvatarView.image = x;
                   
                  //cache
-                NSMutableDictionary *lDicM = [NSMutableDictionary dictionaryWithDictionary:self.gDic4CacheImg];
-                lDicM[tweet.profileImageUrl] = x;
-                self.gDic4CacheImg = lDicM.copy;
+                [self.gCache4Img setObject:x forKey:tweet.profileImageUrl];
               }
                error:^(NSError * _Nullable error) {
                   NSLog(@"load img err:%@",error);
@@ -83,11 +85,14 @@
 }
 
 #pragma mark -  getter
-- (NSDictionary<NSString *,UIImage *> *)gDic4CacheImg{
-    if (nil == _gDic4CacheImg) {
-        _gDic4CacheImg = [NSDictionary dictionary];
+- (NSCache *)gCache4Img{
+    if (nil == _gCache4Img) {
+        _gCache4Img = [[NSCache alloc] init];
+        _gCache4Img.countLimit = 10;
+        _gCache4Img.totalCostLimit = 5 * 1024 * 1024;//5M
+        _gCache4Img.delegate = self;
     }
-    return _gDic4CacheImg;
+    return _gCache4Img;
 }
 
 @end
