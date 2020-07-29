@@ -54,7 +54,7 @@ static NSString * const RWTwitterInstantDomain = @"TwitterInstant";
     
     @weakify(self);
     
-    [[[[[[
+    [[[[[[[[[
 //          [self isUserAgreeLoginSig]
           [self requestAccessToTwitterSignal]
          
@@ -68,6 +68,8 @@ static NSString * const RWTwitterInstantDomain = @"TwitterInstant";
         return value.length > 2;
     }]
        throttle:0.5]
+        distinctUntilChanged]
+        logAll]
       //网络请求
       flattenMap:^__kindof RACSignal * _Nullable(NSString *  _Nullable value) {
         @strongify(self);
@@ -76,16 +78,16 @@ static NSString * const RWTwitterInstantDomain = @"TwitterInstant";
 //        [self signalForSearchWithText:value];
     }]
      deliverOn:[RACScheduler mainThreadScheduler]]
+     logAll]
      subscribeNext:^(NSArray *  _Nullable arr) {
         @strongify(self);
-        NSLog(@"arr:%@", arr);
+//        NSLog(@"arr:%@", arr);
         [self.resultsViewController displayTweets:arr];
     } error:^(NSError * _Nullable error) {
         NSLog(@"err:%@", error);
     } completed:^{
-        
-    }]
-    ;
+        NSLog(@"completed");
+    }];
     
     
     

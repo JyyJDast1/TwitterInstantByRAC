@@ -37,7 +37,7 @@
 
 #pragma mark -  delegate 4 nscache
 - (void)cache:(NSCache *)cache willEvictObject:(id)obj{
-    NSLog(@"cache willEvictObject:%@",obj);
+//    NSLog(@"cache willEvictObject:%@",obj);
 }
 
 #pragma mark - Table view data source
@@ -67,7 +67,7 @@
             [[[tweet getAvatarImageSignal]
                 deliverOn:[RACScheduler mainThreadScheduler]]
                subscribeNext:^(UIImage *  _Nullable x) {
-                  NSLog(@"img set,%@",[NSThread currentThread]);
+//                  NSLog(@"img set,%@",[NSThread currentThread]);
                   
                   //注意：不要错误赋值到 imageview上了！！！
                   cell.twitterAvatarView.image = x;
